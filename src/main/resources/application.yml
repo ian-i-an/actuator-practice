@@ -31,7 +31,9 @@ logging:
 # 서버 설정
 server:
   port: 8080
+
 # actuator info 설정
+# POST loggers/com.codeit body:{"configuredLevel":"INFO"} 로 설정 바꾸기 가능
 info:
   app:
     name: My Shopping Mall
