@@ -33,6 +33,7 @@ public class OrderService {
     //메트릭 추가!
     private final Counter orderCreatedCounter;
     private final Counter orderCancelledCounter;
+    // 값이 줄었다가 증가하는 게이지도 있음;
 
     private final DistributionSummary orderAmountSummary;
 
