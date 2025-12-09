@@ -31,7 +31,7 @@ public class PaymentApiHealthIndicator implements HealthIndicator {
                         .withDetail("message", "결제 API가 정상 동작중입니다.")
                         .build();
             } else {
-                return Health.up()
+                return Health.down()
                         .withDetail("api", "Payment API")
                         .withDetail("status", "Unavailable")
                         .withDetail("message", "결제 API를 사용할 수 없습니다.")

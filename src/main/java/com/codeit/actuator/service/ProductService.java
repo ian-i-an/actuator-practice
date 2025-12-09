@@ -5,6 +5,8 @@ import com.codeit.actuator.dto.ProductRequest;
 import com.codeit.actuator.dto.ProductResponse;
 import com.codeit.actuator.exception.ProductNotFoundException;
 import com.codeit.actuator.repository.ProductRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,12 +20,21 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
 @Slf4j
 public class ProductService {
     
     private final ProductRepository productRepository;
-    
+    private final Timer findProductTimer;
+
+    public ProductService(ProductRepository productRepository,
+                          MeterRegistry meterRegistry) {
+        this.productRepository = productRepository;
+        this.findProductTimer = Timer.builder("products.find.time")
+                .description("Time taken to find a product")
+                .tag("operation", "findById")
+                .register(meterRegistry);
+    }
+
     /**
      * 전체 상품 조회
      */
@@ -43,14 +54,16 @@ public class ProductService {
      * 상품 ID로 조회
      */
     public ProductResponse findById(Long id) {
-        log.debug("상품 조회 - ID: {}", id);
-        
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
-        
-        log.debug("상품 조회 완료 - ID: {}, 이름: {}", product.getId(), product.getName());
-        
-        return ProductResponse.from(product);
+        return findProductTimer.record(()->{
+            log.debug("상품 조회 - ID: {}", id);
+
+            Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException(id));
+
+            log.debug("상품 조회 완료 - ID: {}, 이름: {}", product.getId(), product.getName());
+
+            return ProductResponse.from(product);
+        });
     }
     
     /**
